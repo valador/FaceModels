@@ -3,3 +3,4 @@ HRN/workspace/assets/pretrained_models/*
 NextFace/models/*
 NextFace/input/*
 NextFace/output/*
+*.log
