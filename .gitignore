@@ -1,10 +1,17 @@
-HRN/workspace/assets/3dmm_assets/BFM/*
-HRN/workspace/assets/3dmm_assets/bfm_albedo_map_basis/*
-HRN/workspace/assets/3dmm_assets/template_mesh/*
-HRN/workspace/assets/pretrained_models/hrn_v1.1/*
-HRN/workspace/assets/pretrained_models/*.pth
-HRN/workspace/assets/pretrained_models/*.pb
-NextFace/models/*
+# HRN/workspace/assets/3dmm_assets/BFM/*
+# HRN/workspace/assets/3dmm_assets/bfm_albedo_map_basis/*
+# HRN/workspace/assets/3dmm_assets/template_mesh/*
+# HRN/workspace/assets/pretrained_models/hrn_v1.1/*
+# HRN/workspace/assets/pretrained_models/*.pth
+# HRN/workspace/assets/pretrained_models/*.pb
+# NextFace/models/*
 NextFace/input/*
 NextFace/output/*
 *.log
+*.pth
+*.pb
+*.h5
+*.pickle
+*.mat
+*.npy
+*.obj
