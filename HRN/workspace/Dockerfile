@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu20.04
 LABEL description="HRN GPU Nvidia Container"
 
 ARG USER_GID="100"
@@ -15,7 +15,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
 ENV TINI_VERSION=${TINI_VERSION}
 # ENV HRN_PATH=/usr/local/HRN
-ENV CUDA_HOME /usr/local/cuda-11.8
+# ENV CUDA_HOME /usr/local/cuda-11.8
 
 # Update packages
 RUN apt-get update --fix-missing \
@@ -106,15 +106,15 @@ RUN python3 -c "from urllib.request import urlopen; \
 
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools wheel
-RUN python3 -m pip install tensorboard cmake   # cmake from apt-get is too old
+# RUN python3 -m pip install tensorboard cmake   # cmake from apt-get is too old
 RUN python3 -m pip install \
     torch==1.13.1 \
     torchvision \
-    --index-url https://download.pytorch.org/whl/cu118
+    --index-url https://download.pytorch.org/whl/cu117
 
 RUN python3 -m pip install \
-    numpy==1.24.3 \
-    tensorflow==2.13.0 \
+    numpy \
+    tensorflow \
     opencv-python \
     opencv-python-headless \
     protobuf \
@@ -149,10 +149,10 @@ ENV FORCE_CUDA=1
 USER ${USER_NAME}
 WORKDIR ${HOME}
 
-RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
-	&& tar xzf 2.1.0.tar.gz \
-	&& rm 2.1.0.tar.gz
-ENV CUB_HOME=${HOME}/cub-2.1.0
+# RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
+# 	&& tar xzf 2.1.0.tar.gz \
+# 	&& rm 2.1.0.tar.gz
+# ENV CUB_HOME=${HOME}/cub-2.1.0
 
 RUN python3 -m pip install --user "git+https://github.com/facebookresearch/fvcore"
 RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopath"
