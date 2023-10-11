@@ -7,6 +7,8 @@ ARG USER_GID="1000"
 ARG USER_UID="1000"
 ARG USER_NAME="lab"
 
+ENV CONDA_ENV="HRN"
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
@@ -79,26 +81,26 @@ ENV PATH ${HOME}/miniconda/bin:$PATH
 
 RUN conda update --all
 
-RUN conda create -y -n pytorch3d python=3.9
+RUN conda create -y -n ${CONDA_ENV} python=3.9
     # pytorch==1.13.0 \
     # torchvision==0.14.0 \ - cpu only
     # torchaudio \
     # pytorch-cuda=11.8  \
     # cudatoolkit=11.8.0
 # numpy 1.26.0 with pytorch==2.0.0
-RUN conda install -n pytorch3d --yes -c pytorch -c nvidia \
+RUN conda install -n ${CONDA_ENV} --yes -c pytorch -c nvidia \
     pytorch==2.0.0 \
     torchvision \
     pytorch-cuda==11.8 \
     cudatoolkit==11.8
 #install with tqdm
-RUN conda install -n pytorch3d --yes -c fvcore -c iopath -c conda-forge fvcore
+RUN conda install -n ${CONDA_ENV} --yes -c fvcore -c iopath -c conda-forge fvcore
 # RUN python3 -m pip install --user "git+https://github.com/facebookresearch/fvcore"
 # RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopath"
 
-RUN echo "conda activate pytorch3d" >> ${HOME}/.bashrc
+RUN echo "conda activate ${CONDA_ENV}" >> ${HOME}/.bashrc
 # HRN deps
-RUN conda install -n pytorch3d --yes -c conda-forge \
+RUN conda install -n ${CONDA_ENV} --yes -c conda-forge \
     # numpy==1.24.3 \
     tensorflow==2.12.1 \
     # opencv==4.5.5 \
@@ -118,12 +120,12 @@ RUN conda install -n pytorch3d --yes -c conda-forge \
     cmake \
     lit
 # to sloow install
-RUN conda install -n pytorch3d --yes -c conda-forge opencv
-RUN conda install -n pytorch3d --yes -c fastai opencv-python-headless
-RUN conda install -n pytorch3d --yes -c 1adrianb face-alignment
+RUN conda install -n ${CONDA_ENV} --yes -c conda-forge opencv
+RUN conda install -n ${CONDA_ENV} --yes -c fastai opencv-python-headless
+RUN conda install -n ${CONDA_ENV} --yes -c 1adrianb face-alignment
 
 # tqdm py 3.8 only on conda
-RUN conda run -n pytorch3d pip3 install --upgrade pip
+RUN conda run -n ${CONDA_ENV} pip3 install --upgrade pip
 # RUN conda run -n pytorch3d pip3 install \
     # numpy==1.18.1 \
     # numpy==1.24.3 \
@@ -168,13 +170,13 @@ RUN conda run -n pytorch3d pip3 install --upgrade pip
 # ENV CUB_HOME=${HOME}/cub-2.1.0
 
 # RUN conda install -n pytorch3d pytorch3d -c pytorch3d
-RUN conda run -n pytorch3d pip3 install \
+RUN conda run -n ${CONDA_ENV} pip3 install \
     "git+https://github.com/facebookresearch/pytorch3d.git"
 
 # Install from github repo
 RUN git clone https://github.com/youngLBW/HRN.git
 
-RUN conda run -n pytorch3d pip3 install \
+RUN conda run -n ${CONDA_ENV} pip3 install \
     "git+https://github.com/NVlabs/nvdiffrast.git"
 
 # Prepare dirs
@@ -184,8 +186,8 @@ RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
     mkdir -p ${HOME}/HRN/assets/pretrained_models && \
     mkdir -p ${HOME}/HRN/assets/pretrained_models/hrn_v1.1
 
-COPY workspace/assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
-COPY workspace/assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
+COPY HRN/workspace/assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
+COPY HRN/workspace/assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
 
 USER root
 
