@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: context
+  # namespace: playground
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadOnlyMany
+    #- ReadWriteOnce
+  # persistentVolumeReclaimPolicy: Delete
+  storageClassName: context-storage #Задаем имя класса хранилища
+  hostPath:
+    #path: "/root/projects/1c-server-docker/src"
+    path: "/home/slayer/projects/Docker-HRN/workspace"
+    # type: Directory

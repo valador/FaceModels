@@ -1,0 +1,7 @@
+{
+    "auths": {
+      "registry-svc.registry.svc.cluster.local:5000/v1/": {
+        "auth": "bXl1c2VyOm15cGFzc3dk"
+      }
+    }
+  }

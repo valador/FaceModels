@@ -1,0 +1,303 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.conda
+#1 transferring dockerfile: 3.87kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu20.04
+#3 ...
+
+#4 [auth] nvidia/cuda:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu20.04
+#3 DONE 4.1s
+
+#5 [ 1/29] FROM docker.io/nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu20.04@sha256:1748d07d9cf99bd1af9caac868d7d20bac15ae1b3f9cdc626844dd1d28ce59ab
+#5 DONE 0.0s
+
+#6 [ 9/29] RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/lab/miniconda.sh
+#6 CACHED
+
+#7 [ 2/29] RUN apt-get update --fix-missing     && apt-get -y upgrade     && apt-get -y dist-upgrade
+#7 CACHED
+
+#8 [ 3/29] RUN apt-get install -y --no-install-recommends     bzip2     ca-certificates     curl     locales     sudo     wget     git
+#8 CACHED
+
+#9 [19/29] RUN conda install -n faceNext --yes -c 1adrianb face_alignment==1.2
+#9 CACHED
+
+#10 [17/29] RUN conda run -n faceNext pip3 install redner-gpu
+#10 CACHED
+
+#11 [18/29] RUN conda install -n faceNext --yes -c conda-forge opencv
+#11 CACHED
+
+#12 [ 7/29] RUN apt-get install -y --no-install-recommends     freeglut3-dev     binutils-gold     g++     libglew-dev     mesa-common-dev     build-essential     libglew1.5-dev     libglm-dev     mesa-utils     libegl1-mesa-dev     libgles2-mesa-dev     libnvidia-gl-535     libglib2.0-0     libsm6     libxrender1     libxext6
+#12 CACHED
+
+#13 [ 5/29] RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc
+#13 CACHED
+
+#14 [ 6/29] RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su     && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers     && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers     && useradd -m -s /bin/bash -N -u 1000 --shell=/bin/bash lab     && chmod g+w /etc/passwd     && chown -R 1000:1000 /home/lab
+#14 CACHED
+
+#15 [12/29] RUN conda update --all
+#15 CACHED
+
+#16 [15/29] RUN conda install -n faceNext --yes -c pytorch -c nvidia     pytorch==1.13.1     torchvision     pytorch-cuda==11.7     cudatoolkit==11.7
+#16 CACHED
+
+#17 [11/29] RUN /home/lab/miniconda/bin/conda init bash
+#17 CACHED
+
+#18 [20/29] RUN conda install -n faceNext --yes -c pytorch -c nvidia pytorch==1.13.1
+#18 CACHED
+
+#19 [14/29] RUN conda create -y -n faceNext python=3.8
+#19 CACHED
+
+#20 [ 8/29] WORKDIR /home/lab
+#20 CACHED
+
+#21 [ 4/29] RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen     && locale-gen
+#21 CACHED
+
+#22 [13/29] RUN echo "conda activate faceNext" >> /home/lab/.bashrc
+#22 CACHED
+
+#23 [16/29] RUN conda run -n faceNext pip3 install --upgrade pip
+#23 CACHED
+
+#24 [10/29] RUN bash /home/lab/miniconda.sh -b -u -p /home/lab/miniconda
+#24 CACHED
+
+#25 [21/29] RUN conda install -n faceNext --yes -c anaconda h5py
+#25 CACHED
+
+#26 [internal] load build context
+#26 transferring context: 340B done
+#26 DONE 0.0s
+
+#27 [22/29] RUN conda run -n faceNext pip3 install opencv-python==4.7.0.72 mediapipe
+#27 122.3 Collecting opencv-python==4.7.0.72
+#27 122.3   Downloading opencv_python-4.7.0.72-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (61.8 MB)
+#27 122.3      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.8/61.8 MB 2.4 MB/s eta 0:00:00
+#27 122.3 Collecting mediapipe
+#27 122.3   Obtaining dependency information for mediapipe from https://files.pythonhosted.org/packages/11/8b/4dd08d22be3f6eedd36306dbdd4b800b804c0dda478e3e112e736cd91e1b/mediapipe-0.10.7-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#27 122.3   Downloading mediapipe-0.10.7-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.6 kB)
+#27 122.3 Requirement already satisfied: numpy>=1.17.0 in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from opencv-python==4.7.0.72) (1.19.2)
+#27 122.3 Collecting absl-py (from mediapipe)
+#27 122.3   Obtaining dependency information for absl-py from https://files.pythonhosted.org/packages/01/e4/dc0a1dcc4e74e08d7abedab278c795eef54a224363bb18f5692f416d834f/absl_py-2.0.0-py3-none-any.whl.metadata
+#27 122.3   Downloading absl_py-2.0.0-py3-none-any.whl.metadata (2.3 kB)
+#27 122.3 Collecting attrs>=19.1.0 (from mediapipe)
+#27 122.3   Downloading attrs-23.1.0-py3-none-any.whl (61 kB)
+#27 122.3      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.2/61.2 kB 2.1 MB/s eta 0:00:00
+#27 122.3 Collecting flatbuffers>=2.0 (from mediapipe)
+#27 122.3   Obtaining dependency information for flatbuffers>=2.0 from https://files.pythonhosted.org/packages/6f/12/d5c79ee252793ffe845d58a913197bfa02ae9a0b5c9bc3dc4b58d477b9e7/flatbuffers-23.5.26-py2.py3-none-any.whl.metadata
+#27 122.3   Downloading flatbuffers-23.5.26-py2.py3-none-any.whl.metadata (850 bytes)
+#27 122.3 Collecting matplotlib (from mediapipe)
+#27 122.3   Obtaining dependency information for matplotlib from https://files.pythonhosted.org/packages/08/73/a4af3493a81d6e5e1fdb4c72f4d3573a7e94b60f7c2c69ab0275fdc7cd8e/matplotlib-3.7.3-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl.metadata
+#27 122.3   Downloading matplotlib-3.7.3-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl.metadata (5.7 kB)
+#27 122.3 Collecting opencv-contrib-python (from mediapipe)
+#27 122.3   Obtaining dependency information for opencv-contrib-python from https://files.pythonhosted.org/packages/32/9e/4dcc0bb70e3b365dc85b8f96c63e6a306653f7cc6ed061aa6cc7b2bddee7/opencv_contrib_python-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#27 122.3   Downloading opencv_contrib_python-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (19 kB)
+#27 122.3 Collecting protobuf<4,>=3.11 (from mediapipe)
+#27 122.3   Downloading protobuf-3.20.3-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl (1.0 MB)
+#27 122.3      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 786.8 kB/s eta 0:00:00
+#27 122.3 Collecting sounddevice>=0.4.4 (from mediapipe)
+#27 122.3   Downloading sounddevice-0.4.6-py3-none-any.whl (31 kB)
+#27 122.3 Requirement already satisfied: CFFI>=1.0 in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from sounddevice>=0.4.4->mediapipe) (1.15.1)
+#27 122.3 Collecting contourpy>=1.0.1 (from matplotlib->mediapipe)
+#27 122.3   Obtaining dependency information for contourpy>=1.0.1 from https://files.pythonhosted.org/packages/8e/71/7f20855592cc929bc206810432b991ec4c702dc26b0567b132e52c85536f/contourpy-1.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#27 122.3   Downloading contourpy-1.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.9 kB)
+#27 122.3 Collecting cycler>=0.10 (from matplotlib->mediapipe)
+#27 122.3   Obtaining dependency information for cycler>=0.10 from https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl.metadata
+#27 122.3   Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+#27 122.3 Collecting fonttools>=4.22.0 (from matplotlib->mediapipe)
+#27 122.3   Obtaining dependency information for fonttools>=4.22.0 from https://files.pythonhosted.org/packages/a6/b8/965acdc0510d0ceca51bb9b9286a600eb8221d1e79d29da16f5bf035deab/fonttools-4.43.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#27 122.3   Downloading fonttools-4.43.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (152 kB)
+#27 122.3      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 152.4/152.4 kB 1.8 MB/s eta 0:00:00
+#27 122.3 Collecting kiwisolver>=1.0.1 (from matplotlib->mediapipe)
+#27 122.3   Obtaining dependency information for kiwisolver>=1.0.1 from https://files.pythonhosted.org/packages/d2/55/7021ffcc8cb26a520bb051aa0a3d08daf200cde945e5863d5768161e2d3d/kiwisolver-1.4.5-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl.metadata
+#27 122.3   Downloading kiwisolver-1.4.5-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl.metadata (6.4 kB)
+#27 122.3 Collecting numpy>=1.17.0 (from opencv-python==4.7.0.72)
+#27 122.3   Obtaining dependency information for numpy>=1.17.0 from https://files.pythonhosted.org/packages/98/5d/5738903efe0ecb73e51eb44feafba32bdba2081263d40c5043568ff60faf/numpy-1.24.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#27 122.3   Downloading numpy-1.24.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.6 kB)
+#27 122.3 Requirement already satisfied: packaging>=20.0 in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from matplotlib->mediapipe) (23.1)
+#27 122.3 Requirement already satisfied: pillow>=6.2.0 in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from matplotlib->mediapipe) (10.0.1)
+#27 122.3 Collecting pyparsing>=2.3.1 (from matplotlib->mediapipe)
+#27 122.3   Obtaining dependency information for pyparsing>=2.3.1 from https://files.pythonhosted.org/packages/39/92/8486ede85fcc088f1b3dba4ce92dd29d126fd96b0008ea213167940a2475/pyparsing-3.1.1-py3-none-any.whl.metadata
+#27 122.3   Downloading pyparsing-3.1.1-py3-none-any.whl.metadata (5.1 kB)
+#27 122.3 Collecting python-dateutil>=2.7 (from matplotlib->mediapipe)
+#27 122.3   Downloading python_dateutil-2.8.2-py2.py3-none-any.whl (247 kB)
+#27 122.3      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 247.7/247.7 kB 1.5 MB/s eta 0:00:00
+#27 122.3 Collecting importlib-resources>=3.2.0 (from matplotlib->mediapipe)
+#27 122.3   Obtaining dependency information for importlib-resources>=3.2.0 from https://files.pythonhosted.org/packages/65/6e/09d8816b5cb7a4006ef8ad1717a2703ad9f331dae9717d9f22488a2d6469/importlib_resources-6.1.0-py3-none-any.whl.metadata
+#27 122.3   Downloading importlib_resources-6.1.0-py3-none-any.whl.metadata (4.1 kB)
+#27 122.3 Requirement already satisfied: pycparser in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from CFFI>=1.0->sounddevice>=0.4.4->mediapipe) (2.21)
+#27 122.3 Requirement already satisfied: zipp>=3.1.0 in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from importlib-resources>=3.2.0->matplotlib->mediapipe) (3.11.0)
+#27 122.3 Requirement already satisfied: six>=1.5 in ./miniconda/envs/faceNext/lib/python3.8/site-packages (from python-dateutil>=2.7->matplotlib->mediapipe) (1.16.0)
+#27 122.3 Downloading mediapipe-0.10.7-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (33.5 MB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 33.5/33.5 MB 3.2 MB/s eta 0:00:00
+#27 122.3 Downloading flatbuffers-23.5.26-py2.py3-none-any.whl (26 kB)
+#27 122.3 Downloading absl_py-2.0.0-py3-none-any.whl (130 kB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 130.2/130.2 kB 4.0 MB/s eta 0:00:00
+#27 122.3 Downloading matplotlib-3.7.3-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl (9.2 MB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.2/9.2 MB 3.0 MB/s eta 0:00:00
+#27 122.3 Downloading numpy-1.24.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (17.3 MB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.3/17.3 MB 1.7 MB/s eta 0:00:00
+#27 122.3 Downloading opencv_contrib_python-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (67.8 MB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.8/67.8 MB 4.5 MB/s eta 0:00:00
+#27 122.3 Downloading contourpy-1.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (301 kB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 301.1/301.1 kB 6.9 MB/s eta 0:00:00
+#27 122.3 Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
+#27 122.3 Downloading fonttools-4.43.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.6 MB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.6/4.6 MB 6.4 MB/s eta 0:00:00
+#27 122.3 Downloading importlib_resources-6.1.0-py3-none-any.whl (33 kB)
+#27 122.3 Downloading kiwisolver-1.4.5-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl (1.2 MB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 6.8 MB/s eta 0:00:00
+#27 122.3 Downloading pyparsing-3.1.1-py3-none-any.whl (103 kB)
+#27 122.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 103.1/103.1 kB 6.3 MB/s eta 0:00:00
+#27 122.3 Installing collected packages: flatbuffers, python-dateutil, pyparsing, protobuf, numpy, kiwisolver, importlib-resources, fonttools, cycler, attrs, absl-py, sounddevice, opencv-python, opencv-contrib-python, contourpy, matplotlib, mediapipe
+#27 122.3   Attempting uninstall: numpy
+#27 122.3     Found existing installation: numpy 1.19.2
+#27 122.3     Uninstalling numpy-1.19.2:
+#27 122.3       Successfully uninstalled numpy-1.19.2
+#27 122.3 Successfully installed absl-py-2.0.0 attrs-23.1.0 contourpy-1.1.1 cycler-0.12.1 flatbuffers-23.5.26 fonttools-4.43.1 importlib-resources-6.1.0 kiwisolver-1.4.5 matplotlib-3.7.3 mediapipe-0.10.7 numpy-1.24.4 opencv-contrib-python-4.8.1.78 opencv-python-4.7.0.72 protobuf-3.20.3 pyparsing-3.1.1 python-dateutil-2.8.2 sounddevice-0.4.6
+#27 122.3 
+#27 DONE 123.9s
+
+#28 [23/29] RUN conda run -n faceNext pip3 install mitsuba
+#28 23.62 Collecting mitsuba
+#28 23.62   Obtaining dependency information for mitsuba from https://files.pythonhosted.org/packages/00/ca/515a1f0e2c6675b47a2f430d539f3a88aefeb3c8e38ca4658a15081ec30e/mitsuba-3.4.0-cp38-cp38-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata
+#28 23.62   Downloading mitsuba-3.4.0-cp38-cp38-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.1 kB)
+#28 23.62 Collecting drjit==0.4.3 (from mitsuba)
+#28 23.62   Obtaining dependency information for drjit==0.4.3 from https://files.pythonhosted.org/packages/76/9a/4acacfbd0f2b6ed63a0fd2e4475e10c5891abb752ff5b8c797cd50245914/drjit-0.4.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#28 23.62   Downloading drjit-0.4.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+#28 23.62 Downloading mitsuba-3.4.0-cp38-cp38-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (39.3 MB)
+#28 23.62    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 39.3/39.3 MB 5.4 MB/s eta 0:00:00
+#28 23.62 Downloading drjit-0.4.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.6 MB)
+#28 23.62    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.6/4.6 MB 8.5 MB/s eta 0:00:00
+#28 23.62 Installing collected packages: drjit, mitsuba
+#28 23.62 Successfully installed drjit-0.4.3 mitsuba-3.4.0
+#28 23.62 
+#28 DONE 24.2s
+
+#29 [24/29] RUN conda install -n faceNext --yes -c conda-forge numpy==1.22.3
+#29 1.842 Collecting package metadata (current_repodata.json): ...working... WARNING conda.models.version:get_matcher(556): Using .* with relational operator is superfluous and deprecated and will be removed in a future version of conda. Your spec was 1.7.1.*, but conda is ignoring the .* and treating it as 1.7.1
+#29 23.72 done
+#29 23.72 Solving environment: ...working... done
+#29 69.23 
+#29 69.23 ## Package Plan ##
+#29 69.23 
+#29 69.23   environment location: /home/lab/miniconda/envs/faceNext
+#29 69.23 
+#29 69.23   added / updated specs:
+#29 69.23     - numpy==1.22.3
+#29 69.23 
+#29 69.23 
+#29 69.23 The following packages will be downloaded:
+#29 69.23 
+#29 69.23     package                    |            build
+#29 69.23     ---------------------------|-----------------
+#29 69.23     numpy-1.22.3               |   py38h99721a1_2         6.8 MB  conda-forge
+#29 69.23     openssl-1.1.1l             |       h7f98852_0         2.1 MB  conda-forge
+#29 69.23     ------------------------------------------------------------
+#29 69.23                                            Total:         8.9 MB
+#29 69.23 
+#29 69.23 The following packages will be REMOVED:
+#29 69.23 
+#29 69.23   numpy-base-1.19.2-py38hfa32c7d_0
+#29 69.23 
+#29 69.23 The following packages will be UPDATED:
+#29 69.23 
+#29 69.23   numpy              pkgs/main::numpy-1.19.2-py38h54aff64_0 --> conda-forge::numpy-1.22.3-py38h99721a1_2 
+#29 69.23 
+#29 69.23 The following packages will be SUPERSEDED by a higher-priority channel:
+#29 69.23 
+#29 69.23   ca-certificates    anaconda::ca-certificates-2023.08.22-~ --> conda-forge::ca-certificates-2023.7.22-hbcca054_0 
+#29 69.23   certifi            anaconda/linux-64::certifi-2023.7.22-~ --> conda-forge/noarch::certifi-2023.7.22-pyhd8ed1ab_0 
+#29 69.23   openssl               anaconda::openssl-1.1.1w-h7f8727e_0 --> conda-forge::openssl-1.1.1l-h7f98852_0 
+#29 69.23 
+#29 69.23 
+#29 69.23 
+#29 69.23 Downloading and Extracting Packages: ...working... done
+#29 69.23 Preparing transaction: ...working... done
+#29 69.27 Verifying transaction: ...working... done
+#29 69.54 Executing transaction: ...working... done
+#29 DONE 71.2s
+
+#30 [25/29] RUN git clone --branch clean_code https://github.com/LeMilenov/NextFace.git /home/lab/NextFace
+#30 0.285 Cloning into '/home/lab/NextFace'...
+#30 DONE 68.8s
+
+#31 [26/29] COPY NextFace/models /home/lab/NextFace/baselMorphableModel
+#31 DONE 2.5s
+
+#32 [27/29] RUN chown -R 1000:1000 /home/lab/NextFace/baselMorphableModel
+#32 DONE 0.2s
+
+#33 [28/29] RUN apt-get --purge -y remove wget curl git     && apt-get --purge -y autoremove     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+#33 0.346 Reading package lists...
+#33 1.180 Building dependency tree...
+#33 1.302 Reading state information...
+#33 1.418 The following packages were automatically installed and are no longer required:
+#33 1.418   git-man libbrotli1 libcurl3-gnutls libcurl4 liberror-perl libgssapi-krb5-2
+#33 1.418   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libnghttp2-14 libpsl5
+#33 1.419   librtmp1 libssh-4
+#33 1.419 Use 'apt autoremove' to remove them.
+#33 1.428 The following packages will be REMOVED:
+#33 1.429   curl* git* wget*
+#33 1.596 0 upgraded, 0 newly installed, 3 to remove and 2 not upgraded.
+#33 1.596 After this operation, 38.3 MB disk space will be freed.
+#33 1.615 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 14505 files and directories currently installed.)
+#33 1.679 Removing curl (7.68.0-1ubuntu2.19) ...
+#33 1.714 Removing git (1:2.25.1-1ubuntu3.11) ...
+#33 1.774 Removing wget (1.20.3-1ubuntu2) ...
+#33 1.843 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 13739 files and directories currently installed.)
+#33 1.848 Purging configuration files for wget (1.20.3-1ubuntu2) ...
+#33 1.877 Purging configuration files for git (1:2.25.1-1ubuntu3.11) ...
+#33 1.978 Reading package lists...
+#33 2.694 Building dependency tree...
+#33 2.828 Reading state information...
+#33 2.964 The following packages will be REMOVED:
+#33 2.964   git-man* libbrotli1* libcurl3-gnutls* libcurl4* liberror-perl*
+#33 2.964   libgssapi-krb5-2* libk5crypto3* libkeyutils1* libkrb5-3* libkrb5support0*
+#33 2.965   libnghttp2-14* libpsl5* librtmp1* libssh-4*
+#33 3.129 0 upgraded, 0 newly installed, 14 to remove and 2 not upgraded.
+#33 3.129 After this operation, 7,161 kB disk space will be freed.
+#33 3.137 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 13736 files and directories currently installed.)
+#33 3.142 Removing git-man (1:2.25.1-1ubuntu3.11) ...
+#33 3.177 Removing libcurl4:amd64 (7.68.0-1ubuntu2.19) ...
+#33 3.327 Removing libcurl3-gnutls:amd64 (7.68.0-1ubuntu2.19) ...
+#33 3.377 Removing libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
+#33 3.421 Removing liberror-perl (0.17029-1) ...
+#33 3.465 Removing libssh-4:amd64 (0.9.3-2ubuntu2.3) ...
+#33 3.509 Removing libgssapi-krb5-2:amd64 (1.17-6ubuntu4.3) ...
+#33 3.542 Removing libkrb5-3:amd64 (1.17-6ubuntu4.3) ...
+#33 3.587 Removing libk5crypto3:amd64 (1.17-6ubuntu4.3) ...
+#33 3.629 Removing libkeyutils1:amd64 (1.6-6ubuntu1.1) ...
+#33 3.775 Removing libkrb5support0:amd64 (1.17-6ubuntu4.3) ...
+#33 3.819 Removing libnghttp2-14:amd64 (1.40.0-1ubuntu0.1) ...
+#33 3.863 Removing libpsl5:amd64 (0.21.0-1ubuntu1) ...
+#33 3.909 Removing librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build1) ...
+#33 3.966 Processing triggers for libc-bin (2.31-0ubuntu9.12) ...
+#33 4.016 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 13466 files and directories currently installed.)
+#33 4.023 Purging configuration files for libgssapi-krb5-2:amd64 (1.17-6ubuntu4.3) ...
+#33 DONE 4.2s
+
+#34 [29/29] WORKDIR /home/lab/NextFace
+#34 DONE 0.1s
+
+#35 exporting to image
+#35 exporting layers
+#35 exporting layers 11.2s done
+#35 writing image sha256:38353522b030a2ce504be4d1e01f4dffcb9ac90caebbb57b6d3974dbf8ab5e64 done
+#35 naming to docker.io/library/nextface done
+#35 DONE 11.3s

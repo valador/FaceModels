@@ -1,0 +1,98 @@
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+# FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+
+LABEL description="HRN GPU Nvidia Container"
+
+ARG USER_GID="1000"
+ARG USER_UID="1000"
+ARG USER_GROUP="lab"
+ARG USER_NAME="lab"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
+
+# Update packages
+RUN apt-get update --fix-missing \
+    && apt-get -y upgrade \
+    && apt-get -y dist-upgrade
+
+RUN apt-get install -y --no-install-recommends \
+	python3-opencv \
+    bzip2 \
+    ca-certificates \
+    curl \
+    python3-dev \
+    locales \
+    git \
+    wget \
+    sudo \
+    ninja-build \
+    python3-distutils
+
+# RUN ln -sv /usr/bin/python3 /usr/bin/python
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen
+
+ENV USER_GID=${USER_GID} \
+    USER_UID=${USER_UID} \
+    USER_GROUP=${USER_GROUP} \
+    USER_NAME=${USER_NAME} \
+    HOME=/home/${USER_NAME} \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    SHELL=/bin/bash
+
+# Create default user
+RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
+    && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
+    && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
+    # && useradd -m -s /bin/bash -N -u ${USER_UID} ${USER_NAME} \
+    && mkdir -p ${HOME} \
+    && groupadd -r ${USER_GROUP} --gid=${USER_GID} \
+    && useradd -r -g ${USER_GROUP} --uid=${USER_UID} --home-dir=${HOME} --shell=${SHELL} ${USER_NAME} \
+    && chmod g+w /etc/passwd \
+    && chown -R ${USER_NAME}:${USER_GROUP} ${HOME}
+
+USER ${USER_NAME}
+WORKDIR ${HOME}
+
+ENV PATH=${HOME}/.local/bin:$PATH
+
+RUN python3 -c "from urllib.request import urlopen; \
+    exec(urlopen('https://bootstrap.pypa.io/get-pip.py').read())"
+
+# install dependencies
+# See https://pytorch.org/ for other options if you use a different version of CUDA
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade setuptools wheel
+RUN python3 -m pip install --user tensorboard cmake   # cmake from apt-get is too old
+RUN python3 -m pip install --user torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+RUN python3 -m pip install --user "git+https://github.com/facebookresearch/fvcore"
+RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopath"
+
+# set FORCE_CUDA because during `docker build` cuda is not accessible
+ENV FORCE_CUDA="1"
+# This will by default build detectron2 for all common cuda architectures and take a lot more time,
+# because inside `docker build`, there is no way to tell which architecture will be used.
+ARG TORCH_CUDA_ARCH_LIST="Pascal"
+ENV TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}"
+
+RUN python3 -m pip install --user scikit-image matplotlib imageio plotly opencv-python
+RUN python3 -m pip install --user black usort flake8 flake8-bugbear flake8-comprehensions
+RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
+	&& tar xzf 2.1.0.tar.gz \
+	&& rm 2.1.0.tar.gz
+ENV CUB_HOME=${HOME}/cub-2.1.0
+RUN python3 -m pip install "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.4"
+# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/pytorch3d.git"
+
+# RUN python3 -m pip install --user jupyter numpy pandas matplotlib pillow plotly scikit-learn seaborn wandb albumentations
+
+# Set a fixed model cache directory.
+ENV FVCORE_CACHE="/tmp"

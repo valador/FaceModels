@@ -1,0 +1,200 @@
+# FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
+
+LABEL description="HRN GPU Nvidia Container"
+
+ARG USER_GID="1000"
+ARG USER_UID="1000"
+ARG USER_NAME="lab"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
+
+#RUN cd ~/Downloads
+# Update packages
+RUN apt-get update --fix-missing \
+    && apt-get -y upgrade \
+    && apt-get -y dist-upgrade
+RUN apt-get install -y --no-install-recommends \
+    bzip2 \
+    ca-certificates \
+    curl \
+    locales \
+    sudo \
+    wget \
+    git
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen
+
+ENV USER_GID=${USER_GID} \
+    USER_UID=${USER_UID} \
+    USER_NAME=${USER_NAME} \
+    HOME=/home/${USER_NAME} \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    SHELL=/bin/bash
+
+# Enable prompt color, generally
+RUN sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /etc/skel/.bashrc
+
+# Create default user
+RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
+    && sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers \
+    && sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers \
+    && useradd -m -s /bin/bash -N -u ${USER_UID} --shell=${SHELL} ${USER_NAME} \
+    && chmod g+w /etc/passwd \
+    && chown -R ${USER_UID}:${USER_GID} ${HOME}
+
+# libnvidia-gl-535 suggested to installed drivers
+RUN apt-get install -y --no-install-recommends \
+    freeglut3-dev \
+    binutils-gold \
+    g++ \
+    # cmake \
+    libglew-dev \
+    mesa-common-dev \
+    build-essential \
+    libglew1.5-dev \
+    libglm-dev \
+    mesa-utils \
+    libegl1-mesa-dev \
+    libgles2-mesa-dev \
+    libnvidia-gl-535 \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6
+
+USER ${USER_NAME}
+WORKDIR ${HOME}
+
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${HOME}/miniconda.sh
+RUN bash ${HOME}/miniconda.sh -b -u -p $HOME/miniconda
+RUN ${HOME}/miniconda/bin/conda init bash
+
+ENV PATH ${HOME}/miniconda/bin:$PATH
+
+RUN conda update --all
+
+RUN conda create -y -n pytorch3d python=3.9
+    # pytorch==1.13.0 \
+    # torchvision==0.14.0 \ - cpu only
+    # torchaudio \
+    # pytorch-cuda=11.8  \
+    # cudatoolkit=11.8.0
+# numpy 1.26.0 with pytorch==2.0.0
+RUN conda install -n pytorch3d --yes -c pytorch -c nvidia \
+    pytorch==2.0.0 \
+    torchvision \
+    pytorch-cuda==11.8 \
+    cudatoolkit==11.8
+#install with tqdm
+RUN conda install -n pytorch3d --yes -c fvcore -c iopath -c conda-forge fvcore
+# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/fvcore"
+# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopath"
+
+RUN echo "conda activate pytorch3d" >> ${HOME}/.bashrc
+# HRN deps
+RUN conda install -n pytorch3d --yes -c conda-forge \
+    # numpy==1.24.3 \
+    tensorflow==2.12.1 \
+    # opencv==4.5.5 \
+    # tqdm \
+    kornia \
+    pillow \
+    scipy \
+    tensorboard \
+    scikit-image \
+    albumentations \
+    numba \
+    einops \
+    trimesh \
+    pytorch-model-summary \
+    ninja \
+    imageio \
+    cmake \
+    lit
+# to sloow install
+RUN conda install -n pytorch3d --yes -c conda-forge opencv
+RUN conda install -n pytorch3d --yes -c fastai opencv-python-headless
+RUN conda install -n pytorch3d --yes -c 1adrianb face-alignment
+
+# tqdm py 3.8 only on conda
+RUN conda run -n pytorch3d pip3 install --upgrade pip
+# RUN conda run -n pytorch3d pip3 install \
+    # numpy==1.18.1 \
+    # numpy==1.24.3 \
+    # torch==1.6.0 \
+    # torchvision==0.7.0 \
+    # tensorflow-gpu==2.3.0 \
+    # tensorflow==2.12.1 \
+    # opencv-python==4.5.5.64 \
+    # opencv-python-headless==4.5.5.64 \
+    # protobuf==3.20.3 \
+    # tqdm \
+    # kornia \
+    # pillow \
+    # scipy \
+    # tensorboard \
+    # scikit-image \
+    # albumentations \
+    # torchsummary \
+    # numba \
+    # einops \
+    # trimesh \
+    # face-alignment \
+    # ninja \
+    # imageio \
+    # cmake \
+    # lit
+
+# pytorch3d demo deps
+# RUN conda run -n pytorch3d pip3 install \
+#     matplotlib \
+#     black \
+#     isort \
+#     flake8 \
+#     flake8-bugbear \
+#     flake8-comprehensions
+
+# not need?
+# RUN conda install -n pytorch3d --yes -c bottler nvidiacub
+# RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
+# 	&& tar xzf 2.1.0.tar.gz \
+# 	&& rm 2.1.0.tar.gz
+# ENV CUB_HOME=${HOME}/cub-2.1.0
+
+# RUN conda install -n pytorch3d pytorch3d -c pytorch3d
+RUN conda run -n pytorch3d pip3 install \
+    "git+https://github.com/facebookresearch/pytorch3d.git"
+
+# Install from github repo
+RUN git clone https://github.com/youngLBW/HRN.git
+
+RUN conda run -n pytorch3d pip3 install \
+    "git+https://github.com/NVlabs/nvdiffrast.git"
+
+# Prepare dirs
+RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
+    mkdir -p ${HOME}/HRN/assets/3dmm_assets/bfm_albedo_map_basis && \
+    mkdir -p ${HOME}/HRN/assets/3dmm_assets/template_mesh && \
+    mkdir -p ${HOME}/HRN/assets/pretrained_models && \
+    mkdir -p ${HOME}/HRN/assets/pretrained_models/hrn_v1.1
+
+COPY workspace/assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
+COPY workspace/assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
+
+USER root
+
+# Clean packages and caches
+RUN apt-get --purge -y remove wget curl git \
+    && apt-get --purge -y autoremove \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/HRN/assets
+
+USER ${USER_NAME}
+WORKDIR ${HOME}

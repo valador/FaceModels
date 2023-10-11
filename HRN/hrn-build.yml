@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: build-hrn
+  namespace: default
+spec:
+  restartPolicy: Never
+  containers:
+  - name: build-hrn
+    image: localhost:31500/gcr.io/kaniko-project/executor:debug
+    # image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: IfNotPresent
+    # resources:
+    #   requests:
+    #     memory: "1Gi"
+    #     # cpu: "250m"
+    #   limits:
+    #     memory: "9Gi"
+    #     # cpu: "500m"
+    args: ["--dockerfile=/workspace/Dockerfile.pytorch3d",
+            "--context=dir://workspace",
+            "--destination=registry-svc.registry.svc.cluster.local:5000/hrn/hrn:1.0",
+            "--cache=true",
+            "--cache-repo=registry-svc.registry.svc.cluster.local:5000/cache",
+            "--skip-unused-stages",
+            "--snapshot-mode=redo",
+            "--use-new-run",
+            "--skip-tls-verify-registry=registry-svc.registry.svc.cluster.local:5000",
+            "--skip-tls-verify"]
+            # "--cache-ttl=24h"]
+    volumeMounts:
+    - name: auth-cred
+      mountPath: /kaniko/.docker
+    - name: build-context
+      mountPath: /workspace
+  volumes:
+  - name: auth-cred
+    secret:
+      secretName: registry-cred
+  - name: build-context
+    persistentVolumeClaim:
+      claimName: build-context-claim
+
