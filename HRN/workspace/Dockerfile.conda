@@ -120,21 +120,21 @@ RUN conda install -n ${CONDA_ENV} --yes -c conda-forge \
     cmake \
     lit
 # to sloow install
-RUN conda install -n ${CONDA_ENV} --yes -c conda-forge opencv
-RUN conda install -n ${CONDA_ENV} --yes -c fastai opencv-python-headless
+# RUN conda install -n ${CONDA_ENV} --yes -c conda-forge opencv
+# RUN conda install -n ${CONDA_ENV} --yes -c fastai opencv-python-headless
 RUN conda install -n ${CONDA_ENV} --yes -c 1adrianb face-alignment
 
 # tqdm py 3.8 only on conda
 RUN conda run -n ${CONDA_ENV} pip3 install --upgrade pip
-# RUN conda run -n pytorch3d pip3 install \
+RUN conda run -n ${CONDA_ENV} pip3 install \
     # numpy==1.18.1 \
     # numpy==1.24.3 \
     # torch==1.6.0 \
     # torchvision==0.7.0 \
     # tensorflow-gpu==2.3.0 \
     # tensorflow==2.12.1 \
-    # opencv-python==4.5.5.64 \
-    # opencv-python-headless==4.5.5.64 \
+    opencv-python==4.5.5.64 \
+    opencv-python-headless==4.5.5.64
     # protobuf==3.20.3 \
     # tqdm \
     # kornia \

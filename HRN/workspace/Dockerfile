@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
 LABEL description="HRN GPU Nvidia Container"
 
 ARG USER_GID="100"
@@ -76,6 +76,26 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
+# libnvidia-gl-535 suggested to installed drivers
+RUN apt-get install -y --no-install-recommends \
+    freeglut3-dev \
+    binutils-gold \
+    g++ \
+    # cmake \
+    libglew-dev \
+    mesa-common-dev \
+    build-essential \
+    libglew1.5-dev \
+    libglm-dev \
+    mesa-utils \
+    libegl1-mesa-dev \
+    libgles2-mesa-dev \
+    libnvidia-gl-535 \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6
+
 USER ${USER_NAME}
 WORKDIR ${HOME}
 
@@ -86,14 +106,15 @@ RUN python3 -c "from urllib.request import urlopen; \
 
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools wheel
-RUN python3 -m pip install --user tensorboard cmake   # cmake from apt-get is too old
-RUN python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN python3 -m pip install tensorboard cmake   # cmake from apt-get is too old
+RUN python3 -m pip install \
+    torch==1.13.1 \
+    torchvision \
+    --index-url https://download.pytorch.org/whl/cu118
 
 RUN python3 -m pip install \
     numpy==1.24.3 \
-    tensorflow==2.13.0
-# rotobuf tensorboard
-RUN python3 -m pip install \
+    tensorflow==2.13.0 \
     opencv-python \
     opencv-python-headless \
     protobuf \
@@ -110,7 +131,8 @@ RUN python3 -m pip install \
     trimesh \
     face-alignment \
     ninja \
-    imageio
+    imageio \
+    cmake
 
 # Custom cache invalidation
 # ARG CACHEBUST=1
@@ -138,22 +160,6 @@ RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopat
 RUN python3 -m pip install "git+https://github.com/facebookresearch/pytorch3d.git"
 
 USER root
-
-# Install dependencies dvdiffast
-RUN apt-get install -y --no-install-recommends \
-    freeglut3-dev \
-    binutils-gold \
-    g++ \
-    cmake \
-    libglew-dev \
-    mesa-common-dev \
-    build-essential \
-    libglew1.5-dev \
-    libglm-dev \
-    mesa-utils \
-    libegl1-mesa-dev \
-    libgles2-mesa-dev \
-    libnvidia-gl-535
 
 # Clean packages and caches
 RUN apt-get --purge -y remove wget curl git \
