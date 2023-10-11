@@ -35,8 +35,9 @@ main / nightly 	main / nightly 	>=3.8, <=3.11
 2.1 	0.16 	    >=3.8, <=3.11
 2.0 	0.15 	    >=3.8, <=3.11
 1.13 	0.14 	    >=3.7.2, <=3.10
-
-# Single Image
+---
+## NextFace
+#### Single Image
 python optimizer.py --input input/emma1.jpg --output output
-# Batch for same face
+#### Batch for same face
 python optimizer.py --sharedIdentity --input data/input --output data/output

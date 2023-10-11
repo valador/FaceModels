@@ -1,11 +1,11 @@
-FROM nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
 LABEL description="HRN GPU Nvidia Container"
 
 ARG USER_GID="100"
 ARG USER_UID="1000"
 ARG USER_NAME="lab"
 # ARG FFMPEG_VERSION="5.1.2"
-ARG TINI_VERSION="v0.19.0"
+# ARG TINI_VERSION="v0.19.0"
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
@@ -13,7 +13,7 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
-ENV TINI_VERSION=${TINI_VERSION}
+# ENV TINI_VERSION=${TINI_VERSION}
 # ENV HRN_PATH=/usr/local/HRN
 # ENV CUDA_HOME /usr/local/cuda-11.8
 
@@ -24,7 +24,7 @@ RUN apt-get update --fix-missing \
 
 # Install dependencies
 RUN apt-get install -y --no-install-recommends \
-    python3-opencv \    
+    # python3-opencv \    
     python3-dev \
     python3-distutils \
     bzip2 \
@@ -73,8 +73,8 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
     && chown -R ${USER_UID}:${USER_GID} ${HOME}
 
 # Install Tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
+# ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+# RUN chmod +x /tini
 
 # libnvidia-gl-535 suggested to installed drivers
 RUN apt-get install -y --no-install-recommends \
@@ -108,12 +108,12 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools wheel
 # RUN python3 -m pip install tensorboard cmake   # cmake from apt-get is too old
 RUN python3 -m pip install \
-    torch==1.13.1 \
-    torchvision \
-    --index-url https://download.pytorch.org/whl/cu117
+    torch==1.13.0+cu117 \
+    torchvision==0.14.0+cu117 \
+    --extra-index-url https://download.pytorch.org/whl/cu117
 
 RUN python3 -m pip install \
-    numpy \
+    # numpy \
     tensorflow \
     opencv-python \
     opencv-python-headless \
@@ -154,8 +154,8 @@ WORKDIR ${HOME}
 # 	&& rm 2.1.0.tar.gz
 # ENV CUB_HOME=${HOME}/cub-2.1.0
 
-RUN python3 -m pip install --user "git+https://github.com/facebookresearch/fvcore"
-RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopath"
+RUN python3 -m pip install "git+https://github.com/facebookresearch/fvcore"
+RUN python3 -m pip install "git+https://github.com/facebookresearch/iopath"
 
 RUN python3 -m pip install "git+https://github.com/facebookresearch/pytorch3d.git"
 
@@ -169,7 +169,7 @@ RUN apt-get --purge -y remove wget curl git \
 
 # Configure container startup
 # ENTRYPOINT [ "/tini", "-g", "--" ]
-CMD [ "/bin/bash" ]
+# CMD [ "/bin/bash" ]
 
 # Re-activate user "lab"
 USER $USER_UID
