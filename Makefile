@@ -5,7 +5,7 @@ DATETIME := $(shell date +%s)
 ## build image
 .PHONY: build-hrn build-nf
 build-hrn:
-	docker build -f HRN/workspace/Dockerfile.conda --progress=plain -t hrn HRN/workspace &> build_hrn.log
+	docker build -f HRN/workspace/Dockerfile --progress=plain -t hrn HRN/workspace &> build_hrn.log
 build-nf:
 	docker build -f NextFace/Dockerfile.conda --progress=plain -t nextface . &> build_nf.log
 .PHONY: run-hrn run-nf

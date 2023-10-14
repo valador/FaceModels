@@ -13,6 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
 
+ENV PYTHON_VERSION=python3.9
 
 # Update packages
 RUN apt-get update --fix-missing \
@@ -22,8 +23,8 @@ RUN apt-get update --fix-missing \
 # Install dependencies
 RUN apt-get install -y --no-install-recommends \
     # python3-opencv \    
-    python3-dev \
-    python3-distutils \
+    # python3-dev \
+    # python3-distutils \
     bzip2 \
     ca-certificates \
     curl \
@@ -31,20 +32,27 @@ RUN apt-get install -y --no-install-recommends \
     sudo \
     wget \
     git \
-    ninja-build
+    # ninja-build \
+    software-properties-common
     # libglu1-mesa-dev \
     # python3-pyqt5
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ${PYTHON_VERSION} \
+    ${PYTHON_VERSION}-distutils \
+    ${PYTHON_VERSION}-dev
 
 # Setup deadsnakes ppa for multiple python versions
-RUN deadsnakes_list="/etc/apt/sources.list.d/deadsnakes.list"; \
-    printf 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
-    && printf 'deb-src http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
-    && gpg --keyserver keyserver.ubuntu.com --recv-keys 6A755776 \
-    && gpg --export 6A755776 | apt-key add - \
-    && apt-get update
-RUN apt-get install -y --no-install-recommends \
-    python3.9 \
-    python3.9-distutils
+# RUN deadsnakes_list="/etc/apt/sources.list.d/deadsnakes.list"; \
+#     printf 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
+#     && printf 'deb-src http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
+#     && gpg --keyserver keyserver.ubuntu.com --recv-keys 6A755776 \
+#     && gpg --export 6A755776 | apt-key add - \
+#     && apt-get update
+# RUN apt-get install -y --no-install-recommends \
+#     ${PYTHON_VERSION} \
+#     ${PYTHON_VERSION}-distutils
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
     && locale-gen
@@ -94,20 +102,21 @@ WORKDIR ${HOME}
 
 ENV PATH=${HOME}/.local/bin:$PATH
 
-RUN python3 -c "from urllib.request import urlopen; \
+RUN ${PYTHON_VERSION} -c "from urllib.request import urlopen; \
     exec(urlopen('https://bootstrap.pypa.io/get-pip.py').read())"
 
-RUN python3 -m pip install --user --upgrade pip
-RUN python3 -m pip install --user --upgrade setuptools wheel
+RUN ${PYTHON_VERSION} -m pip install --user --upgrade pip
+RUN ${PYTHON_VERSION} -m pip install --user --upgrade setuptools wheel
 
-RUN python3 -m pip install --user \
-    torch==2.0.0+cu117 \
-    torchvision==0.15.1+cu117 \
+RUN ${PYTHON_VERSION} -m pip install --user \
+    torch==2.0.1+cu117 \
+    torchvision==0.15.2+cu117 \
     --index-url https://download.pytorch.org/whl/cu117
 
-RUN python3 -m pip install --user --no-cache-dir \
+RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir \
     numpy \
-    tensorflow[and-cuda] \
+    tensorflow==2.11.0 \
+    tensorrt \
     opencv-python \
     opencv-python-headless \
     protobuf \
@@ -122,18 +131,18 @@ RUN python3 -m pip install --user --no-cache-dir \
     numba \
     einops \
     trimesh \
-    face-alignment==1.2 \
+    face-alignment \
     ninja \
     imageio \
-    cmake
-    # tensorrt
+    cmake \
+    lit
 
 # Custom cache invalidation
 # ARG CACHEBUST=1
 
 # Install from github repo
-RUN python3 -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/fvcore"
-RUN python3 -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/iopath"
+RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/fvcore"
+RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/iopath"
 
 # Fix for build pytorch3d -------------------------------------------------------------------------
 RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
@@ -142,7 +151,7 @@ RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
 ENV CUB_HOME=${HOME}/cub-2.1.0
 
 USER root
-RUN apt-get install -y --no-install-recommends software-properties-common
+# RUN apt-get install -y --no-install-recommends software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
 RUN apt-get update
 
@@ -156,7 +165,7 @@ RUN ln -s /usr/bin/gcc-$MAX_GCC_VERSION /usr/local/cuda/bin/gcc && \
 # RUN cat tmp.txt
 USER ${USER_NAME}
 #------------------------------------------------------------------------------------------
-# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/pytorch3d.git"
+# RUN ${PYTHON_VERSION} -m pip install --user "git+https://github.com/facebookresearch/pytorch3d.git"
 RUN git clone https://github.com/facebookresearch/pytorch3d.git ${HOME}/pytorch3d
 COPY patches ${HOME}/pytorch3d
 USER root
@@ -168,15 +177,15 @@ ENV FORCE_CUDA=1
 # for my 1080 ti
 ENV TORCH_CUDA_ARCH_LIST="Pascal"
 ENV CUDA_HOME=/usr/local/cuda
-RUN python3 -m pip install --user --no-cache-dir .
+RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir .
 
 WORKDIR ${HOME}
 
 RUN rm -rf ${HOME}/pytorch3d
 
-RUN python3 -m pip install --user --no-cache-dir "git+https://github.com/NVlabs/nvdiffrast.git"
+RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/NVlabs/nvdiffrast.git"
 
-RUN git clone https://github.com/youngLBW/HRN.git ${HOME}/HRN
+RUN git clone --branch adopt https://github.com/valador/HRN_3D_face_reconstruction.git ${HOME}/HRN
 
 # Prepare dirs
 # RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \

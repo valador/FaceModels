@@ -50,7 +50,7 @@ python optimizer.py --sharedIdentity --input data/input --output data/output
 ---
 ## HRN
 ```bash
-CUDA_VISIBLE_DEVICES=0 python3 demo.py --input_type single_view --input_root ./assets/examples/single_view_image --output_root ./assets/custom/output
+CUDA_VISIBLE_DEVICES=0 python3.9 demo.py --input_type single_view --input_root ./assets/examples/single_view_image --output_root ./assets/custom/output
 ```
 
 pip install tensorflow[and-cuda]==2.14

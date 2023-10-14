@@ -103,7 +103,7 @@ RUN echo "conda activate ${CONDA_ENV}" >> ${HOME}/.bashrc
 RUN conda run -n ${CONDA_ENV} pip3 install --upgrade pip
 RUN conda run -n ${CONDA_ENV} pip3 install \
     numpy \
-    tensorflow \
+    tensorflow==2.11.0 \
     opencv-python \
     opencv-python-headless \
     protobuf\
@@ -166,7 +166,7 @@ RUN conda run -n ${CONDA_ENV} pip3 install \
     "git+https://github.com/NVlabs/nvdiffrast.git"
 
 # Install from github repo
-RUN git clone https://github.com/valador/HRN_3D_face_reconstruction.git ${HOME}/HRN
+RUN git clone --branch adopt https://github.com/valador/HRN_3D_face_reconstruction.git ${HOME}/HRN
 
 # Prepare dirs
 # RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
