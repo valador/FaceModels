@@ -1,11 +1,10 @@
 FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
 LABEL description="HRN GPU Nvidia Container"
 
-ARG USER_GID="100"
+ARG USER_GID="1000"
 ARG USER_UID="1000"
 ARG USER_NAME="lab"
-# ARG FFMPEG_VERSION="5.1.2"
-# ARG TINI_VERSION="v0.19.0"
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
@@ -13,9 +12,7 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute,display
-# ENV TINI_VERSION=${TINI_VERSION}
-# ENV HRN_PATH=/usr/local/HRN
-# ENV CUDA_HOME /usr/local/cuda-11.8
+
 
 # Update packages
 RUN apt-get update --fix-missing \
@@ -38,16 +35,16 @@ RUN apt-get install -y --no-install-recommends \
     # libglu1-mesa-dev \
     # python3-pyqt5
 
-    # Setup deadsnakes ppa for multiple python versions
-# RUN deadsnakes_list="/etc/apt/sources.list.d/deadsnakes.list"; \
-#     printf 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
-#     && printf 'deb-src http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
-#     && gpg --keyserver keyserver.ubuntu.com --recv-keys 6A755776 \
-#     && gpg --export 6A755776 | apt-key add - \
-#     && apt-get update
-# RUN apt-get install -y --no-install-recommends \
-#     python3.8 \
-#     python3.8-distutils
+# Setup deadsnakes ppa for multiple python versions
+RUN deadsnakes_list="/etc/apt/sources.list.d/deadsnakes.list"; \
+    printf 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
+    && printf 'deb-src http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
+    && gpg --keyserver keyserver.ubuntu.com --recv-keys 6A755776 \
+    && gpg --export 6A755776 | apt-key add - \
+    && apt-get update
+RUN apt-get install -y --no-install-recommends \
+    python3.9 \
+    python3.9-distutils
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
     && locale-gen
@@ -72,20 +69,16 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
     && chmod g+w /etc/passwd \
     && chown -R ${USER_UID}:${USER_GID} ${HOME}
 
-# Install Tini
-# ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-# RUN chmod +x /tini
-
 # libnvidia-gl-535 suggested to installed drivers
 RUN apt-get install -y --no-install-recommends \
     freeglut3-dev \
     binutils-gold \
     g++ \
-    # cmake \
     libglew-dev \
     mesa-common-dev \
     build-essential \
-    libglew1.5-dev \
+    # libglew1.5-dev \
+    libglew-dev \
     libglm-dev \
     mesa-utils \
     libegl1-mesa-dev \
@@ -104,17 +97,17 @@ ENV PATH=${HOME}/.local/bin:$PATH
 RUN python3 -c "from urllib.request import urlopen; \
     exec(urlopen('https://bootstrap.pypa.io/get-pip.py').read())"
 
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade setuptools wheel
-# RUN python3 -m pip install tensorboard cmake   # cmake from apt-get is too old
-RUN python3 -m pip install \
-    torch==1.13.0+cu117 \
-    torchvision==0.14.0+cu117 \
-    --extra-index-url https://download.pytorch.org/whl/cu117
+RUN python3 -m pip install --user --upgrade pip
+RUN python3 -m pip install --user --upgrade setuptools wheel
 
-RUN python3 -m pip install \
-    # numpy \
-    tensorflow \
+RUN python3 -m pip install --user \
+    torch==2.0.0+cu117 \
+    torchvision==0.15.1+cu117 \
+    --index-url https://download.pytorch.org/whl/cu117
+
+RUN python3 -m pip install --user --no-cache-dir \
+    numpy \
+    tensorflow[and-cuda] \
     opencv-python \
     opencv-python-headless \
     protobuf \
@@ -129,48 +122,81 @@ RUN python3 -m pip install \
     numba \
     einops \
     trimesh \
-    face-alignment \
+    face-alignment==1.2 \
     ninja \
     imageio \
     cmake
+    # tensorrt
 
 # Custom cache invalidation
 # ARG CACHEBUST=1
 
 # Install from github repo
-RUN git clone https://github.com/youngLBW/HRN.git
+RUN python3 -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/fvcore"
+RUN python3 -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/iopath"
 
-RUN python3 -m pip install "git+https://github.com/NVlabs/nvdiffrast.git"
+# Fix for build pytorch3d -------------------------------------------------------------------------
+RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
+	&& tar xzf 2.1.0.tar.gz \
+	&& rm 2.1.0.tar.gz
+ENV CUB_HOME=${HOME}/cub-2.1.0
 
 USER root
-RUN addgroup ${USER_NAME} video
-ENV FORCE_CUDA=1
+RUN apt-get install -y --no-install-recommends software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
+RUN apt-get update
 
+ENV MAX_GCC_VERSION=11
+RUN apt-get install -y --no-install-recommends \
+    gcc-$MAX_GCC_VERSION \
+    g++-$MAX_GCC_VERSION
+RUN ln -s /usr/bin/gcc-$MAX_GCC_VERSION /usr/local/cuda/bin/gcc && \
+    ln -s /usr/bin/g++-$MAX_GCC_VERSION /usr/local/cuda/bin/g++
+# RUN gcc --version > tmp.txt
+# RUN cat tmp.txt
 USER ${USER_NAME}
+#------------------------------------------------------------------------------------------
+# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/pytorch3d.git"
+RUN git clone https://github.com/facebookresearch/pytorch3d.git ${HOME}/pytorch3d
+COPY patches ${HOME}/pytorch3d
+USER root
+RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/pytorch3d
+USER ${USER_NAME}
+WORKDIR ${HOME}/pytorch3d
+RUN git apply cp17.patch
+ENV FORCE_CUDA=1
+# for my 1080 ti
+ENV TORCH_CUDA_ARCH_LIST="Pascal"
+ENV CUDA_HOME=/usr/local/cuda
+RUN python3 -m pip install --user --no-cache-dir .
+
 WORKDIR ${HOME}
 
-# RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
-# 	&& tar xzf 2.1.0.tar.gz \
-# 	&& rm 2.1.0.tar.gz
-# ENV CUB_HOME=${HOME}/cub-2.1.0
+RUN rm -rf ${HOME}/pytorch3d
 
-RUN python3 -m pip install "git+https://github.com/facebookresearch/fvcore"
-RUN python3 -m pip install "git+https://github.com/facebookresearch/iopath"
+RUN python3 -m pip install --user --no-cache-dir "git+https://github.com/NVlabs/nvdiffrast.git"
 
-RUN python3 -m pip install "git+https://github.com/facebookresearch/pytorch3d.git"
+RUN git clone https://github.com/youngLBW/HRN.git ${HOME}/HRN
+
+# Prepare dirs
+# RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
+#     mkdir -p ${HOME}/HRN/assets/3dmm_assets/bfm_albedo_map_basis && \
+#     mkdir -p ${HOME}/HRN/assets/3dmm_assets/template_mesh && \
+#     mkdir -p ${HOME}/HRN/assets/pretrained_models && \
+#     mkdir -p ${HOME}/HRN/assets/pretrained_models/hrn_v1.1
+
+COPY assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
+COPY assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
 
 USER root
+
+RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/HRN
 
 # Clean packages and caches
 RUN apt-get --purge -y remove wget curl git \
     && apt-get --purge -y autoremove \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
-    # && chown ${USER_UID}:${USER_GID} ${HOME}
 
-# Configure container startup
-# ENTRYPOINT [ "/tini", "-g", "--" ]
-# CMD [ "/bin/bash" ]
-
-# Re-activate user "lab"
+# Re-activate user
 USER $USER_UID
-WORKDIR ${HOME}
+WORKDIR ${HOME}/HRN

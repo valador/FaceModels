@@ -1,5 +1,4 @@
-# FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
 
 LABEL description="HRN GPU Nvidia Container"
 
@@ -82,114 +81,106 @@ ENV PATH ${HOME}/miniconda/bin:$PATH
 RUN conda update --all
 
 RUN conda create -y -n ${CONDA_ENV} python=3.9
-    # pytorch==1.13.0 \
-    # torchvision==0.14.0 \ - cpu only
-    # torchaudio \
-    # pytorch-cuda=11.8  \
-    # cudatoolkit=11.8.0
+
+# for my 1080 ti
+ENV TORCH_CUDA_ARCH_LIST="Pascal"
+ENV CUDA_HOME=/usr/local/cuda-11.7
+ENV LD_LIBRARY_PATH="${CUDA_HOME}/lib64"
+# ENV PATH=${CUDA_HOME}:${CUDA_HOME}/bin
+
 # numpy 1.26.0 with pytorch==2.0.0
 RUN conda install -n ${CONDA_ENV} --yes -c pytorch -c nvidia \
-    pytorch==2.0.0 \
+    pytorch==2.0.1 \
     torchvision \
-    pytorch-cuda==11.8 \
-    cudatoolkit==11.8
+    pytorch-cuda==11.7 \
+    cudatoolkit==11.7
 #install with tqdm
-RUN conda install -n ${CONDA_ENV} --yes -c fvcore -c iopath -c conda-forge fvcore
-# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/fvcore"
-# RUN python3 -m pip install --user "git+https://github.com/facebookresearch/iopath"
+RUN conda install -n ${CONDA_ENV} --yes -c fvcore -c iopath -c conda-forge fvcore iopath
+RUN conda install -n ${CONDA_ENV} -y -c bottler nvidiacub
 
 RUN echo "conda activate ${CONDA_ENV}" >> ${HOME}/.bashrc
 # HRN deps
-RUN conda install -n ${CONDA_ENV} --yes -c conda-forge \
-    # numpy==1.24.3 \
-    tensorflow==2.12.1 \
-    # opencv==4.5.5 \
-    # tqdm \
-    kornia \
+RUN conda run -n ${CONDA_ENV} pip3 install --upgrade pip
+RUN conda run -n ${CONDA_ENV} pip3 install \
+    numpy \
+    tensorflow \
+    opencv-python \
+    opencv-python-headless \
+    protobuf\
+    tqdm \
+    kornia\
     pillow \
     scipy \
     tensorboard \
     scikit-image \
     albumentations \
-    numba \
+    torchsummary \
+    numba\
     einops \
     trimesh \
-    pytorch-model-summary \
+    face-alignment \
     ninja \
     imageio \
     cmake \
     lit
-# to sloow install
-# RUN conda install -n ${CONDA_ENV} --yes -c conda-forge opencv
-# RUN conda install -n ${CONDA_ENV} --yes -c fastai opencv-python-headless
-RUN conda install -n ${CONDA_ENV} --yes -c 1adrianb face-alignment
+# RUN conda run -n ${CONDA_ENV} pip3 install typing-extensions --upgrade
 
-# tqdm py 3.8 only on conda
-RUN conda run -n ${CONDA_ENV} pip3 install --upgrade pip
-RUN conda run -n ${CONDA_ENV} pip3 install \
-    # numpy==1.18.1 \
-    # numpy==1.24.3 \
-    # torch==1.6.0 \
-    # torchvision==0.7.0 \
-    # tensorflow-gpu==2.3.0 \
-    # tensorflow==2.12.1 \
-    opencv-python==4.5.5.64 \
-    opencv-python-headless==4.5.5.64
-    # protobuf==3.20.3 \
-    # tqdm \
-    # kornia \
-    # pillow \
-    # scipy \
-    # tensorboard \
-    # scikit-image \
-    # albumentations \
-    # torchsummary \
-    # numba \
-    # einops \
-    # trimesh \
-    # face-alignment \
-    # ninja \
-    # imageio \
-    # cmake \
-    # lit
+# Fix for build pytorch3d -------------------------------------------------------------------------
+RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
+	&& tar xzf 2.1.0.tar.gz \
+	&& rm 2.1.0.tar.gz
+ENV CUB_HOME=${HOME}/cub-2.1.0
 
-# pytorch3d demo deps
-# RUN conda run -n pytorch3d pip3 install \
-#     matplotlib \
-#     black \
-#     isort \
-#     flake8 \
-#     flake8-bugbear \
-#     flake8-comprehensions
+USER root
+RUN apt-get install -y --no-install-recommends software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
+RUN apt-get update
 
-# not need?
-# RUN conda install -n pytorch3d --yes -c bottler nvidiacub
-# RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
-# 	&& tar xzf 2.1.0.tar.gz \
-# 	&& rm 2.1.0.tar.gz
-# ENV CUB_HOME=${HOME}/cub-2.1.0
+ENV MAX_GCC_VERSION=11
+RUN apt-get install -y --no-install-recommends \
+    gcc-$MAX_GCC_VERSION \
+    g++-$MAX_GCC_VERSION
+RUN ln -s /usr/bin/gcc-$MAX_GCC_VERSION /usr/local/cuda/bin/gcc && \
+    ln -s /usr/bin/g++-$MAX_GCC_VERSION /usr/local/cuda/bin/g++
+# RUN gcc --version > tmp.txt
+# RUN cat tmp.txt
+USER ${USER_NAME}
+#------------------------------------------------------------------------------------------
 
-# RUN conda install -n pytorch3d pytorch3d -c pytorch3d
-RUN conda run -n ${CONDA_ENV} pip3 install \
-    "git+https://github.com/facebookresearch/pytorch3d.git"
-
-# Install from github repo
-RUN git clone https://github.com/youngLBW/HRN.git
+# RUN conda install -n ${CONDA_ENV} pytorch3d -c pytorch3d
+# RUN conda run -n ${CONDA_ENV} pip3 install \
+#     "git+https://github.com/facebookresearch/pytorch3d.git"
+RUN git clone https://github.com/facebookresearch/pytorch3d.git ${HOME}/pytorch3d
+COPY patches ${HOME}/pytorch3d
+USER root
+RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/pytorch3d
+USER ${USER_NAME}
+WORKDIR ${HOME}/pytorch3d
+RUN git apply cp17.patch
+ENV FORCE_CUDA=1
+RUN conda run -n ${CONDA_ENV} pip3 install --no-cache-dir .
+WORKDIR ${HOME}
+RUN rm -rf ${HOME}/pytorch3d
 
 RUN conda run -n ${CONDA_ENV} pip3 install \
     "git+https://github.com/NVlabs/nvdiffrast.git"
 
-# Prepare dirs
-RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
-    mkdir -p ${HOME}/HRN/assets/3dmm_assets/bfm_albedo_map_basis && \
-    mkdir -p ${HOME}/HRN/assets/3dmm_assets/template_mesh && \
-    mkdir -p ${HOME}/HRN/assets/pretrained_models && \
-    mkdir -p ${HOME}/HRN/assets/pretrained_models/hrn_v1.1
+# Install from github repo
+RUN git clone https://github.com/valador/HRN_3D_face_reconstruction.git ${HOME}/HRN
 
-COPY HRN/workspace/assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
-COPY HRN/workspace/assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
+# Prepare dirs
+# RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
+#     mkdir -p ${HOME}/HRN/assets/3dmm_assets/bfm_albedo_map_basis && \
+#     mkdir -p ${HOME}/HRN/assets/3dmm_assets/template_mesh && \
+#     mkdir -p ${HOME}/HRN/assets/pretrained_models && \
+#     mkdir -p ${HOME}/HRN/assets/pretrained_models/hrn_v1.1
+
+COPY assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
+COPY assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
 
 USER root
+
+RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/HRN
 
 # Clean packages and caches
 RUN apt-get --purge -y remove wget curl git \
@@ -199,4 +190,4 @@ RUN apt-get --purge -y remove wget curl git \
 RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/HRN/assets
 
 USER ${USER_NAME}
-WORKDIR ${HOME}
+WORKDIR ${HOME}/HRN

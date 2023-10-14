@@ -36,8 +36,21 @@ main / nightly 	main / nightly 	>=3.8, <=3.11
 2.0 	0.15 	    >=3.8, <=3.11
 1.13 	0.14 	    >=3.7.2, <=3.10
 ---
+need code update for:
+face-alignment==1.2
+face_alignment.LandmarksType._3D to face_alignment.LandmarksType.THREE_D.
+
 ## NextFace
 #### Single Image
+```bash
 python optimizer.py --input input/emma1.jpg --output output
+```
 #### Batch for same face
 python optimizer.py --sharedIdentity --input data/input --output data/output
+---
+## HRN
+```bash
+CUDA_VISIBLE_DEVICES=0 python3 demo.py --input_type single_view --input_root ./assets/examples/single_view_image --output_root ./assets/custom/output
+```
+
+pip install tensorflow[and-cuda]==2.14
