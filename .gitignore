@@ -6,7 +6,7 @@
 # HRN/workspace/assets/pretrained_models/*.pb
 # NextFace/models/*
 HRN/workspace/assets/custom/input/*
-HRN/workspace/assets/custom/ouput/*
+HRN/workspace/assets/custom/output/*
 NextFace/input/*
 NextFace/output/*
 *.log

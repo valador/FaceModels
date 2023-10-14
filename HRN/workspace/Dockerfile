@@ -116,7 +116,6 @@ RUN ${PYTHON_VERSION} -m pip install --user \
 RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir \
     numpy \
     tensorflow==2.11.0 \
-    tensorrt \
     opencv-python \
     opencv-python-headless \
     protobuf \
@@ -136,6 +135,10 @@ RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir \
     imageio \
     cmake \
     lit
+
+RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir tensorrt && \
+    ln -s ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer_plugin.so.8 ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer_plugin.so.7 && \
+    ln -s ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer.so.8 ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer.so.7
 
 # Custom cache invalidation
 # ARG CACHEBUST=1
