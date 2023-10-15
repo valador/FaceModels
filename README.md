@@ -36,9 +36,7 @@ main / nightly 	main / nightly 	>=3.8, <=3.11
 2.0 	0.15 	    >=3.8, <=3.11
 1.13 	0.14 	    >=3.7.2, <=3.10
 ---
-need code update for:
-face-alignment==1.2
-face_alignment.LandmarksType._3D to face_alignment.LandmarksType.THREE_D.
+
 
 ## NextFace
 #### Single Image
@@ -46,12 +44,16 @@ face_alignment.LandmarksType._3D to face_alignment.LandmarksType.THREE_D.
 python optimizer.py --input input/emma1.jpg --output output
 ```
 #### Batch for same face
+```bash
 python optimizer.py --sharedIdentity --input data/input --output data/output
+```
+mitsuba leak - couldn't get it to work.
 ---
 ## HRN
+tensorflow >2.11.0 need cudnn > 8.5.0
+torch compiler not support cuda 11.8
 ```bash
-CUDA_VISIBLE_DEVICES=0 python3.9 demo.py --input_type single_view --input_root ./assets/custom/input --output_root ./assets/custom/output
+python3.9 demo.py --input_type single_view --input_root ./assets/custom/input --output_root ./assets/custom/output
+python3.9 demo.py --input_type multi_view --input_root ./assets/custom/input --output_root ./assets/custom/output
 ```
-
-find / -name libnvinfer.so* -print
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/lab/.local/lib/python3.9/site-packages/tensorrt_libs/
+### kubernetes build with kaniko - work, almost, need edit for folder structure and etc, not tested, deprecated.

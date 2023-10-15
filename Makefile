@@ -1,7 +1,14 @@
 SHELL := /bin/bash
 
-DATETIME := $(shell date +%s)
-
+.PHONY: prepear-hrn
+prepear-hrn:
+	mkdir -p ${PWD}/HRN/workspace/assets/3dmm_assets/BFM
+	mkdir -p ${PWD}/HRN/workspace/assets/3dmm_assets/bfm_albedo_map_basis
+	mkdir -p ${PWD}/HRN/workspace/assets/3dmm_assets/template_mesh
+	mkdir -p ${PWD}/HRN/workspace/assets/pretrained_models
+	mkdir -p ${PWD}/HRN/workspace/assets/pretrained_models/hrn_v1.1
+	mkdir -p ${PWD}/HRN/workspace/assets/custom/input
+	mkdir -p ${PWD}/HRN/workspace/assets/custom/output
 ## build image
 .PHONY: build-hrn build-nf
 build-hrn:

@@ -22,9 +22,6 @@ RUN apt-get update --fix-missing \
 
 # Install dependencies
 RUN apt-get install -y --no-install-recommends \
-    # python3-opencv \    
-    # python3-dev \
-    # python3-distutils \
     bzip2 \
     ca-certificates \
     curl \
@@ -32,27 +29,15 @@ RUN apt-get install -y --no-install-recommends \
     sudo \
     wget \
     git \
-    # ninja-build \
     software-properties-common
-    # libglu1-mesa-dev \
-    # python3-pyqt5
+
+# add repo to custom Python version
 RUN add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     ${PYTHON_VERSION} \
     ${PYTHON_VERSION}-distutils \
     ${PYTHON_VERSION}-dev
-
-# Setup deadsnakes ppa for multiple python versions
-# RUN deadsnakes_list="/etc/apt/sources.list.d/deadsnakes.list"; \
-#     printf 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
-#     && printf 'deb-src http://ppa.launchpad.net/deadsnakes/ppa/ubuntu jammy main\n' >> $deadsnakes_list \
-#     && gpg --keyserver keyserver.ubuntu.com --recv-keys 6A755776 \
-#     && gpg --export 6A755776 | apt-key add - \
-#     && apt-get update
-# RUN apt-get install -y --no-install-recommends \
-#     ${PYTHON_VERSION} \
-#     ${PYTHON_VERSION}-distutils
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
     && locale-gen
@@ -136,13 +121,11 @@ RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir \
     cmake \
     lit
 
+# dirty fix for tensorrt v7 libs
 RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir tensorrt && \
-    ln -s ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer_plugin.so.8 ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer_plugin.so.7 && \
-    ln -s ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer.so.8 ${HOME}/.local/lib/python3.9/site-packages/tensorrt_libs/libnvinfer.so.7
-
-# Custom cache invalidation
-# ARG CACHEBUST=1
-
+    ln -s ${HOME}/.local/lib/${PYTHON_VERSION}/site-packages/tensorrt_libs/libnvinfer_plugin.so.8 ${HOME}/.local/lib/${PYTHON_VERSION}/site-packages/tensorrt_libs/libnvinfer_plugin.so.7 && \
+    ln -s ${HOME}/.local/lib/${PYTHON_VERSION}/site-packages/tensorrt_libs/libnvinfer.so.8 ${HOME}/.local/lib/${PYTHON_VERSION}/site-packages/tensorrt_libs/libnvinfer.so.7
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${HOME}/.local/lib/${PYTHON_VERSION}/site-packages/tensorrt_libs/
 # Install from github repo
 RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/fvcore"
 RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/facebookresearch/iopath"
@@ -154,18 +137,16 @@ RUN curl -LO https://github.com/NVIDIA/cub/archive/2.1.0.tar.gz \
 ENV CUB_HOME=${HOME}/cub-2.1.0
 
 USER root
-# RUN apt-get install -y --no-install-recommends software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
 RUN apt-get update
-
+# install custom version for compile pytorch3d
 ENV MAX_GCC_VERSION=11
 RUN apt-get install -y --no-install-recommends \
     gcc-$MAX_GCC_VERSION \
     g++-$MAX_GCC_VERSION
 RUN ln -s /usr/bin/gcc-$MAX_GCC_VERSION /usr/local/cuda/bin/gcc && \
     ln -s /usr/bin/g++-$MAX_GCC_VERSION /usr/local/cuda/bin/g++
-# RUN gcc --version > tmp.txt
-# RUN cat tmp.txt
+
 USER ${USER_NAME}
 #------------------------------------------------------------------------------------------
 # RUN ${PYTHON_VERSION} -m pip install --user "git+https://github.com/facebookresearch/pytorch3d.git"
@@ -187,21 +168,15 @@ WORKDIR ${HOME}
 RUN rm -rf ${HOME}/pytorch3d
 
 RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/NVlabs/nvdiffrast.git"
-
+# my fork
 RUN git clone --branch adopt https://github.com/valador/HRN_3D_face_reconstruction.git ${HOME}/HRN
 
-# Prepare dirs
-# RUN mkdir -p ${HOME}/HRN/assets/3dmm_assets/BFM && \
-#     mkdir -p ${HOME}/HRN/assets/3dmm_assets/bfm_albedo_map_basis && \
-#     mkdir -p ${HOME}/HRN/assets/3dmm_assets/template_mesh && \
-#     mkdir -p ${HOME}/HRN/assets/pretrained_models && \
-#     mkdir -p ${HOME}/HRN/assets/pretrained_models/hrn_v1.1
-
+# copy models
 COPY assets/3dmm_assets ${HOME}/HRN/assets/3dmm_assets
 COPY assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
 
 USER root
-
+# fix permission for models
 RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/HRN
 
 # Clean packages and caches
@@ -210,5 +185,5 @@ RUN apt-get --purge -y remove wget curl git \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Re-activate user
-USER $USER_UID
+USER ${USER_NAME}
 WORKDIR ${HOME}/HRN
