@@ -14,7 +14,7 @@ prepear-hrn:
 build-hrn:
 	docker build -f HRN/workspace/Dockerfile --progress=plain -t hrn HRN/workspace &> build_hrn.log
 build-nf:
-	docker build -f NextFace/Dockerfile.conda --progress=plain -t nextface . &> build_nf.log
+	docker build -f NextFace/Dockerfile --progress=plain --build-arg CACHEBUST=`date +%s` -t nextface . &> build_nf.log
 .PHONY: run-hrn run-nf
 run-hrn:
 	docker run --rm -it \

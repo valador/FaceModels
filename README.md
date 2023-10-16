@@ -41,13 +41,15 @@ main / nightly 	main / nightly 	>=3.8, <=3.11
 ## NextFace
 #### Single Image
 ```bash
-python optimizer.py --input input/emma1.jpg --output output
+python3 optimizer.py --input input/1.jpg --output output
 ```
 #### Batch for same face
 ```bash
-python optimizer.py --sharedIdentity --input data/input --output data/output
+python3 optimizer.py --sharedIdentity --input input --output output
 ```
 mitsuba leak - couldn't get it to work.
+redner not support python 3.8
+torch 1.13.1 not support 11.8, need python 3.9
 ---
 ## HRN
 tensorflow >2.11.0 need cudnn > 8.5.0
