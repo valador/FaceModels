@@ -41,7 +41,7 @@ main / nightly 	main / nightly 	>=3.8, <=3.11
 ## NextFace
 #### Single Image
 ```bash
-python3 optimizer.py --input input/1.jpg --output output
+python3 optimizer.py --input input/2.jpg --output output
 ```
 #### Batch for same face
 ```bash

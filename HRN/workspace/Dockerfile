@@ -62,9 +62,8 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su \
     && chmod g+w /etc/passwd \
     && chown -R ${USER_UID}:${USER_GID} ${HOME}
 
-# libnvidia-gl-535 suggested to installed drivers
+# libnvidia-gl-545 suggested to installed drivers
 RUN apt-get install -y --no-install-recommends \
-    freeglut3-dev \
     binutils-gold \
     g++ \
     libglew-dev \
@@ -76,11 +75,21 @@ RUN apt-get install -y --no-install-recommends \
     mesa-utils \
     libegl1-mesa-dev \
     libgles2-mesa-dev \
-    libnvidia-gl-535 \
+    libnvidia-gl-545 \
     libglib2.0-0 \
     libsm6 \
     libxrender1 \
-    libxext6
+    libxext6 \
+    libglvnd0 \
+    libgl1 \
+    libglx0 \
+    libegl1 \
+    libgles2 \
+    libglvnd-dev \
+    libgl1-mesa-dev \
+    freeglut3-dev \
+    # imageio-ffmpeg \
+    pkg-config
 
 USER ${USER_NAME}
 WORKDIR ${HOME}
@@ -151,12 +160,12 @@ USER ${USER_NAME}
 #------------------------------------------------------------------------------------------
 # RUN ${PYTHON_VERSION} -m pip install --user "git+https://github.com/facebookresearch/pytorch3d.git"
 RUN git clone https://github.com/facebookresearch/pytorch3d.git ${HOME}/pytorch3d
-COPY patches ${HOME}/pytorch3d
+# COPY patches ${HOME}/pytorch3d
 USER root
 RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/pytorch3d
 USER ${USER_NAME}
 WORKDIR ${HOME}/pytorch3d
-RUN git apply cp17.patch
+# RUN git apply cp17.patch
 ENV FORCE_CUDA=1
 # for my 1080 ti
 ENV TORCH_CUDA_ARCH_LIST="Pascal"
@@ -167,7 +176,14 @@ WORKDIR ${HOME}
 
 RUN rm -rf ${HOME}/pytorch3d
 
+# For nvdiffast https://github.com/NVlabs/nvdiffrast/blob/main/docker/Dockerfile
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+# Default pyopengl to EGL for good headless rendering support
+ENV PYOPENGL_PLATFORM egl
+
 RUN ${PYTHON_VERSION} -m pip install --user --no-cache-dir "git+https://github.com/NVlabs/nvdiffrast.git"
+
 # my fork
 RUN git clone --branch adopt https://github.com/valador/HRN_3D_face_reconstruction.git ${HOME}/HRN
 
@@ -178,6 +194,10 @@ COPY assets/pretrained_models ${HOME}/HRN/assets/pretrained_models
 USER root
 # fix permission for models
 RUN chown -R ${USER_UID}:${USER_GID} ${HOME}/HRN
+
+# For nvdiffast
+# COPY patches/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+RUN echo '{"file_format_version": "1.0.0", "ICD": {"library_path": "libEGL_nvidia.so.0"}}' >> /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 # Clean packages and caches
 RUN apt-get --purge -y remove wget curl git \
