@@ -59,3 +59,8 @@ python3.9 demo.py --input_type single_view --input_root ./assets/custom/input --
 python3.9 demo.py --input_type multi_view --input_root ./assets/custom/input --output_root ./assets/custom/output
 ```
 ### kubernetes build with kaniko - work, almost, need edit for folder structure and etc, not tested, deprecated.
+
+python3.9 reconstruct_faces.py --input_type single_view --input_root ./assets/custom/input --output_root ./assets/custom/output
+
+output['displacement_map'] (64, 64, 3)
+output['deformation_map'] (256, 256, 1)
